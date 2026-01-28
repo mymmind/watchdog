@@ -40,7 +40,7 @@ class Watchdog {
 
       // Step 3: Initialize Telegram notifier
       logger.info('Initializing Telegram notifier...');
-      this.notifier = new TelegramNotifier(this.config);
+      this.notifier = new TelegramNotifier(this.config, this.stateManager);
 
       // Test Telegram connection
       const telegramOk = await this.notifier.testConnection();
@@ -63,6 +63,9 @@ class Watchdog {
         this.notifier,
         null, // dashboard will be set later
       );
+
+      // Pass checkers to notifier for /restart command
+      this.notifier.checkers = this.monitor.checkers;
 
       // Step 6: Initialize dashboard (if enabled)
       if (this.config.dashboard?.enabled) {
@@ -193,9 +196,10 @@ class Watchdog {
         this.stateManager.shutdown();
       }
 
-      // Send shutdown notification
+      // Send shutdown notification and stop bot
       if (this.notifier) {
         await this.notifier.sendShutdownNotification();
+        this.notifier.stopPolling();
       }
 
       logger.info('✅ Watchdog shutdown complete');

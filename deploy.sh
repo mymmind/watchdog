@@ -1,5 +1,5 @@
 #!/bin/bash
-# Watchdog Deployment Script for Remote Server
+# Watchdog Deployment Script for Remote Server (No Git Required)
 
 set -e  # Exit on error
 
@@ -7,6 +7,7 @@ set -e  # Exit on error
 SERVER_USER="your-server-user"
 SERVER_HOST="your-server-ip-or-domain"
 DEPLOY_PATH="/home/your-server-user/watchdog"
+TARBALL="watchdog-deploy.tar.gz"
 
 echo "🐕 Watchdog Deployment Script"
 echo "================================"
@@ -24,44 +25,55 @@ fi
 echo "✅ .env file found"
 echo ""
 
-# Deploy
-echo "📦 Deploying to server..."
+# Create tarball with necessary files
+echo "📦 Creating deployment package..."
+tar -czf $TARBALL \
+    src/ \
+    config/ \
+    Dockerfile \
+    docker-compose.yml \
+    package.json \
+    package-lock.json \
+    .dockerignore
+
+echo "✅ Package created: $TARBALL"
 echo ""
 
-ssh $SERVER_USER@$SERVER_HOST << 'ENDSSH'
-set -e
+# Create deployment directory on server
+echo "📁 Creating deployment directory..."
+ssh $SERVER_USER@$SERVER_HOST "mkdir -p $DEPLOY_PATH"
 
-# Create deployment directory
-mkdir -p ~/watchdog
-cd ~/watchdog
+# Copy tarball to server
+echo "📤 Uploading package to server..."
+scp $TARBALL $SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/
 
-# Clone or update repository
-if [ -d .git ]; then
-    echo "📥 Updating repository..."
-    git pull
-else
-    echo "📥 Cloning repository..."
-    git clone https://github.com/mymmind/watchdog.git .
-fi
-
-echo "✅ Repository ready"
-ENDSSH
-
-echo ""
-echo "📤 Copying .env file to server..."
+# Copy .env file
+echo "📤 Copying .env file..."
 scp .env $SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/.env
 
+# Extract and start on server
 echo ""
-echo "🚀 Starting Watchdog..."
+echo "🚀 Deploying on server..."
 
-ssh $SERVER_USER@$SERVER_HOST << 'ENDSSH'
-cd ~/watchdog
+ssh $SERVER_USER@$SERVER_HOST << ENDSSH
+set -e
+cd $DEPLOY_PATH
+
+# Extract tarball
+echo "📦 Extracting files..."
+tar -xzf $TARBALL
+rm $TARBALL
+
+# Create empty files if they don't exist
+touch state.json discovered-services.yml
 
 # Stop if already running
+echo "🛑 Stopping existing container..."
 docker compose down 2>/dev/null || true
 
-# Start with Docker Compose
-docker compose up -d
+# Rebuild and start
+echo "🏗️  Building and starting container..."
+docker compose up -d --build
 
 echo ""
 echo "⏳ Waiting for Watchdog to start..."
@@ -76,19 +88,23 @@ docker compose logs --tail=30 watchdog
 
 echo ""
 echo "✅ Deployment complete!"
-echo ""
-echo "📊 View logs: cd ~/watchdog && docker compose logs -f watchdog"
-echo "🔍 Check status: cd ~/watchdog && docker compose ps"
-echo "🌐 Dashboard: http://localhost:3100 (via SSH tunnel)"
 ENDSSH
+
+# Clean up local tarball
+rm $TARBALL
 
 echo ""
 echo "🎉 Watchdog is now running on your server!"
 echo ""
 echo "📊 To view logs, run:"
-echo "   ssh $SERVER_USER@$SERVER_HOST 'cd ~/watchdog && docker compose logs -f'"
+echo "   ssh $SERVER_USER@$SERVER_HOST 'cd $DEPLOY_PATH && docker compose logs -f watchdog'"
 echo ""
 echo "🌐 To access dashboard, create SSH tunnel:"
 echo "   ssh -L 3100:localhost:3100 $SERVER_USER@$SERVER_HOST"
 echo "   Then open: http://localhost:3100"
+echo ""
+echo "💬 To test Telegram commands, send these to your bot:"
+echo "   /help - Show available commands"
+echo "   /status - Get server status"
+echo "   /restart docker:container-name - Restart a service"
 echo ""
