@@ -154,7 +154,7 @@ export default class DashboardServer {
 
       if (result.success) {
         // Clear the failure from state so it shows as healthy immediately
-        this.stateManager.markRecovery(`${type}:${name}`);
+        this.stateManager.recordRecovery(`${type}:${name}`);
         res.writeHead(200);
       } else {
         res.writeHead(500);
