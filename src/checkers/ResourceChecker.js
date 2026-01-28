@@ -209,14 +209,20 @@ export default class ResourceChecker extends HealthChecker {
 
     // Find CPU line (format varies by system)
     // Linux: %Cpu(s): 12.5 us,  3.1 sy,  0.0 ni, 84.4 id...
+    // BusyBox: CPU:  5% usr  2% sys  0% nic 93% idle  0% io  0% irq  0% sirq
     const cpuLine = lines.find((line) => line.includes('Cpu') || line.includes('CPU'));
 
     if (!cpuLine) {
       throw new Error('Could not parse CPU usage from top');
     }
 
-    // Extract idle percentage and calculate usage
-    const idleMatch = cpuLine.match(/(\d+\.?\d*)\s*id/);
+    // Try GNU top format first: "84.4 id"
+    let idleMatch = cpuLine.match(/(\d+\.?\d*)\s*%?\s*id/);
+
+    // Try BusyBox format: "93% idle"
+    if (!idleMatch) {
+      idleMatch = cpuLine.match(/(\d+)%\s+idle/);
+    }
 
     if (idleMatch) {
       const idle = parseFloat(idleMatch[1]);

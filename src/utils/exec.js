@@ -3,7 +3,7 @@
  * Only whitelisted commands are allowed, and all arguments are sanitized
  */
 
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import logger from './logger.js';
 
 // Whitelist of allowed commands
@@ -48,11 +48,10 @@ export function safeExec(command, args = [], options = {}) {
 
   try {
     logger.debug(`Executing: ${fullCommand}`);
-    const result = execSync(fullCommand, {
+    const result = execFileSync(command, sanitizedArgs, {
       encoding: 'utf8',
       timeout: options.timeout || 10000,
       maxBuffer: options.maxBuffer || 1024 * 1024, // 1MB
-      stdio: ['pipe', 'pipe', 'pipe'], // Capture stdout, stderr
       ...options,
     });
     return result.trim();
