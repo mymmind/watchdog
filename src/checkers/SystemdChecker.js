@@ -86,4 +86,21 @@ export default class SystemdChecker extends HealthChecker {
       return '';
     }
   }
+
+  /**
+   * Restart a systemd service
+   * @param {string} serviceName - Service name
+   * @returns {Promise<Object>} - { success: boolean, message: string }
+   */
+  async restart(serviceName) {
+    try {
+      logger.info(`Restarting systemd service: ${serviceName}`);
+      safeExec('systemctl', ['restart', serviceName]);
+      logger.info(`Systemd service restarted successfully: ${serviceName}`);
+      return { success: true, message: 'Service restarted successfully' };
+    } catch (error) {
+      logger.error(`Failed to restart systemd service: ${serviceName}`, { error: error.message });
+      return { success: false, message: error.message };
+    }
+  }
 }

@@ -4,7 +4,7 @@
  */
 
 import HealthChecker from './HealthChecker.js';
-import { safeExecJSON } from '../utils/exec.js';
+import { safeExecJSON, safeExec } from '../utils/exec.js';
 import logger from '../utils/logger.js';
 
 export default class PM2Checker extends HealthChecker {
@@ -118,6 +118,23 @@ export default class PM2Checker extends HealthChecker {
       return `Error log: ${errorLog}\nOutput log: ${outLog}`;
     } catch {
       return '';
+    }
+  }
+
+  /**
+   * Restart a PM2 process
+   * @param {string} processName - Process name
+   * @returns {Promise<Object>} - { success: boolean, message: string }
+   */
+  async restart(processName) {
+    try {
+      logger.info(`Restarting PM2 process: ${processName}`);
+      safeExec('pm2', ['restart', processName]);
+      logger.info(`PM2 process restarted successfully: ${processName}`);
+      return { success: true, message: 'Process restarted successfully' };
+    } catch (error) {
+      logger.error(`Failed to restart PM2 process: ${processName}`, { error: error.message });
+      return { success: false, message: error.message };
     }
   }
 }

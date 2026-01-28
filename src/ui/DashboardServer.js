@@ -12,10 +12,11 @@ import logger from '../utils/logger.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default class DashboardServer {
-  constructor(config, stateManager, anomalyDetector) {
+  constructor(config, stateManager, anomalyDetector, checkers = {}) {
     this.config = config;
     this.stateManager = stateManager;
     this.anomalyDetector = anomalyDetector;
+    this.checkers = checkers; // { docker, pm2, systemd, http }
     this.server = null;
     this.lastCheckResults = {
       services: [],
@@ -44,7 +45,7 @@ export default class DashboardServer {
    * @param {Object} res - HTTP response
    */
   handleRequest(req, res) {
-    const { url } = req;
+    const { url, method } = req;
 
     try {
       if (url === '/' || url === '/index.html') {
@@ -53,6 +54,8 @@ export default class DashboardServer {
         this.serveStatus(res);
       } else if (url === '/health') {
         this.serveHealth(res);
+      } else if (url.startsWith('/api/restart/') && method === 'POST') {
+        this.handleRestart(res, url);
       } else {
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');
@@ -108,6 +111,61 @@ export default class DashboardServer {
       status: 'ok',
       timestamp: new Date().toISOString(),
     }));
+  }
+
+  /**
+   * Handle restart request
+   * @param {Object} res - HTTP response
+   * @param {string} url - Request URL
+   */
+  async handleRestart(res, url) {
+    // Parse URL: /api/restart/:type/:name
+    const parts = url.split('/');
+    const type = parts[3];
+    const name = decodeURIComponent(parts.slice(4).join('/'));
+
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Content-Type', 'application/json');
+
+    if (!type || !name) {
+      res.writeHead(400);
+      res.end(JSON.stringify({ success: false, message: 'Invalid request' }));
+      return;
+    }
+
+    logger.info('Restart request received', { type, name });
+
+    try {
+      let result;
+
+      if (type === 'docker' && this.checkers.docker) {
+        result = await this.checkers.docker.restart(name);
+      } else if (type === 'pm2' && this.checkers.pm2) {
+        result = await this.checkers.pm2.restart(name);
+      } else if (type === 'systemd' && this.checkers.systemd) {
+        result = await this.checkers.systemd.restart(name);
+      } else {
+        res.writeHead(400);
+        res.end(JSON.stringify({ success: false, message: `Unsupported service type: ${type}` }));
+        return;
+      }
+
+      if (result.success) {
+        // Clear the failure from state so it shows as healthy immediately
+        this.stateManager.markRecovery(`${type}:${name}`);
+        res.writeHead(200);
+      } else {
+        res.writeHead(500);
+      }
+
+      res.end(JSON.stringify(result));
+    } catch (error) {
+      logger.error('Restart failed', { type, name, error: error.message });
+      res.writeHead(500);
+      res.end(JSON.stringify({ success: false, message: error.message }));
+    }
   }
 
   /**

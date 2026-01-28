@@ -29,19 +29,23 @@ export default class DockerChecker extends HealthChecker {
 
       // If container has a health check, use it
       if (service.hasHealthCheck) {
-        const healthStatus = await this.getHealthStatus(service.name);
+        const health = await this.getHealthStatus(service.name);
 
-        if (healthStatus === 'healthy') {
+        if (health.status === 'healthy') {
           return this.createSuccessResult(Date.now() - startTime, {
             state: state.status,
-            healthStatus,
+            healthStatus: health.status,
           });
         }
 
+        const errorMsg = health.log
+          ? `Container health: ${health.status} - ${health.log.slice(0, 200)}`
+          : `Container health: ${health.status}`;
+
         return this.createFailureResult(
           Date.now() - startTime,
-          `Container health: ${healthStatus}`,
-          { state: state.status, healthStatus },
+          errorMsg,
+          { state: state.status, healthStatus: health.status, healthLog: health.log },
         );
       }
 
@@ -89,9 +93,9 @@ export default class DockerChecker extends HealthChecker {
   }
 
   /**
-   * Get container health status
+   * Get container health status with details
    * @param {string} containerName - Container name
-   * @returns {Promise<string>}
+   * @returns {Promise<Object>}
    */
   async getHealthStatus(containerName) {
     try {
@@ -103,12 +107,27 @@ export default class DockerChecker extends HealthChecker {
       ]);
 
       if (health === '<no value>' || !health) {
-        return 'no-healthcheck';
+        return { status: 'no-healthcheck', log: null };
       }
 
-      return health;
+      // Get the last health check log entry if unhealthy
+      if (health === 'unhealthy' || health === 'starting') {
+        try {
+          const log = safeExec('docker', [
+            'inspect',
+            '--format',
+            '{{if .State.Health.Log}}{{(index .State.Health.Log 0).Output}}{{end}}',
+            containerName,
+          ]);
+          return { status: health, log: log || null };
+        } catch {
+          return { status: health, log: null };
+        }
+      }
+
+      return { status: health, log: null };
     } catch {
-      return 'unknown';
+      return { status: 'unknown', log: null };
     }
   }
 
@@ -128,6 +147,23 @@ export default class DockerChecker extends HealthChecker {
       ]);
     } catch {
       return '';
+    }
+  }
+
+  /**
+   * Restart a Docker container
+   * @param {string} containerName - Container name
+   * @returns {Promise<Object>} - { success: boolean, message: string }
+   */
+  async restart(containerName) {
+    try {
+      logger.info(`Restarting container: ${containerName}`);
+      safeExec('docker', ['restart', containerName]);
+      logger.info(`Container restarted successfully: ${containerName}`);
+      return { success: true, message: 'Container restarted successfully' };
+    } catch (error) {
+      logger.error(`Failed to restart container: ${containerName}`, { error: error.message });
+      return { success: false, message: error.message };
     }
   }
 }

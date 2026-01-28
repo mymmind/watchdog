@@ -55,29 +55,26 @@ class Watchdog {
       // Reload config with discovered services
       this.config = configLoader.load();
 
-      // Step 5: Initialize dashboard (if enabled)
-      if (this.config.dashboard?.enabled) {
-        logger.info('Initializing dashboard...');
-        this.dashboard = new DashboardServer(
-          this.config,
-          this.stateManager,
-          null, // anomalyDetector will be accessed via monitor
-        );
-        this.dashboard.start();
-      }
-
-      // Step 6: Initialize and start monitor
+      // Step 5: Initialize monitor
       logger.info('Initializing monitor...');
       this.monitor = new Monitor(
         this.config,
         this.stateManager,
         this.notifier,
-        this.dashboard,
+        null, // dashboard will be set later
       );
 
-      // Update dashboard reference to anomalyDetector
-      if (this.dashboard) {
-        this.dashboard.anomalyDetector = this.monitor.anomalyDetector;
+      // Step 6: Initialize dashboard (if enabled)
+      if (this.config.dashboard?.enabled) {
+        logger.info('Initializing dashboard...');
+        this.dashboard = new DashboardServer(
+          this.config,
+          this.stateManager,
+          this.monitor.anomalyDetector,
+          this.monitor.checkers, // Pass checkers for restart functionality
+        );
+        this.monitor.dashboard = this.dashboard;
+        this.dashboard.start();
       }
 
       await this.monitor.start();
