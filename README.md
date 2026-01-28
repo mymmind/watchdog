@@ -17,6 +17,7 @@ Watchdog automatically detects and monitors Docker containers, PM2 processes, sy
 
 ### 🚨 Intelligent Alerting
 - **Telegram Notifications**: Instant alerts with rich formatting
+- **Interactive Bot Commands**: Monitor and control services directly from Telegram
 - **Flapping Detection**: Prevents alert spam from unstable services
 - **Alert Cooldown**: Configurable intervals between re-alerts (default: 30 minutes)
 - **Recovery Notifications**: Get notified when services come back online
@@ -34,8 +35,11 @@ Watchdog automatically detects and monitors Docker containers, PM2 processes, sy
 
 ### 🖥️ Web Dashboard
 - **Real-Time Status**: Live view of all monitored services
+- **One-Click Restart**: Restart failed services directly from dashboard
 - **System Resources**: Disk, RAM, and CPU usage at a glance
 - **SSL Certificate Monitoring**: Track expiration dates
+- **Basic Authentication**: Optional HTTP Basic Auth protection
+- **API Key Security**: Separate authentication for restart operations
 - **Responsive Design**: Works on desktop and mobile
 - **Auto-Refresh**: Updates every 5 seconds
 
@@ -44,6 +48,47 @@ Watchdog automatically detects and monitors Docker containers, PM2 processes, sy
 - **Sensitive Data Sanitization**: Automatic scrubbing of logs
 - **Graceful Shutdown**: Saves state before exit
 - **Error Recovery**: Continues monitoring even if individual checks fail
+
+## 🤖 Telegram Bot Commands
+
+Interact with Watchdog directly from Telegram:
+
+- **`/status`** - Get current status of all services
+  - Shows healthy/unhealthy service counts
+  - Lists active alerts with downtime duration
+  - Groups services by type (Docker, PM2, systemd, HTTP)
+
+- **`/restart <service>`** - Restart a failed service remotely
+  - `/restart docker:container-name` - Restart Docker container
+  - `/restart pm2:app-name` - Restart PM2 process
+  - `/restart systemd:service-name` - Restart systemd service
+
+- **`/help`** - Show available commands
+
+Example usage:
+```
+You: /status
+
+Bot: 📊 Server Status
+
+Services: 11 total
+✅ Healthy: 10
+❌ Unhealthy: 1
+
+🚨 Active Alerts: 1
+
+❌ docker:api-server
+   Container health: unhealthy
+   Down for: 5m 30s
+
+Services by Type:
+
+DOCKER (9/10 healthy)
+✅ postgres
+✅ redis
+❌ api-server
+...
+```
 
 ## 📋 Requirements
 
@@ -103,6 +148,14 @@ TELEGRAM_CHAT_ID=your_chat_id_here
 # Dashboard (Optional)
 DASHBOARD_ENABLED=true
 DASHBOARD_PORT=3100
+
+# Dashboard Authentication (Optional - highly recommended for production)
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=your-secure-password-here
+
+# API Key for Restart Functionality (Optional - required if using restart feature)
+# Generate a secure key: openssl rand -hex 32
+RESTART_API_KEY=your-secure-api-key-here
 
 # Intervals (Optional, in milliseconds)
 CHECK_INTERVAL_SERVICES=60000      # Docker, PM2, systemd (1 minute)
@@ -172,10 +225,11 @@ Open [http://localhost:3100](http://localhost:3100) in your browser.
 The web dashboard provides a clean, dark-themed interface showing:
 
 - **Overall Status**: Green (all operational) or Red (issues detected)
-- **Service Cards**: Visual status for each monitored service
+- **Service Cards**: Visual status for each monitored service with restart buttons
 - **Resource Meters**: Progress bars for disk, RAM, CPU
 - **Active Alerts**: List of current failures with details
 - **SSL Certificates**: Days remaining until expiration
+- **One-Click Actions**: Restart unhealthy services with a single click
 
 ## ⚙️ Advanced Configuration
 
@@ -328,11 +382,13 @@ Built with:
 
 ## 🗺️ Roadmap
 
+- [x] ~~Interactive Telegram bot commands~~ ✅
+- [x] ~~Dashboard authentication (HTTP Basic Auth)~~ ✅
+- [x] ~~One-click service restart from dashboard~~ ✅
 - [ ] Email notification support
 - [ ] Slack webhook integration
 - [ ] Custom alerting rules (threshold-based)
 - [ ] Historical metrics and graphs
-- [ ] Mobile app for iOS/Android
 - [ ] Multi-server support (monitor multiple servers from one Watchdog instance)
 - [ ] Integration with Prometheus/Grafana
 - [ ] Custom health check scripts

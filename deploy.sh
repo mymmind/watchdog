@@ -3,7 +3,7 @@
 
 set -e  # Exit on error
 
-# Configuration
+# Configuration - UPDATE THESE VALUES FOR YOUR SERVER
 SERVER_USER="your-server-user"
 SERVER_HOST="your-server-ip-or-domain"
 DEPLOY_PATH="/home/your-server-user/watchdog"

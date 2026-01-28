@@ -304,7 +304,33 @@ docker-compose run --user $(id -u):$(id -g) watchdog
 
 ## Production Deployment
 
-### Hetzner Server
+### Automated Deployment (Recommended)
+
+Use the included deployment script for servers without git:
+
+```bash
+# Configure .env locally
+cp .env.example .env
+nano .env  # Add your credentials
+
+# Edit deploy.sh with your server details
+nano deploy.sh  # Update SERVER_USER and SERVER_HOST
+
+# Deploy to remote server
+./deploy.sh
+```
+
+The script will:
+1. Package the application files
+2. Upload to remote server
+3. Extract and start with Docker Compose
+4. Show logs and status
+
+**Note:** The deploy script uses tarball deployment (no git required on server).
+
+### Manual Deployment
+
+#### Hetzner Server
 
 ```bash
 # SSH to server
@@ -344,6 +370,20 @@ server {
     }
 }
 ```
+
+### SSH Tunnel (Quick Access)
+
+Access dashboard securely without reverse proxy:
+
+```bash
+# From your local machine
+ssh -L 3100:localhost:3100 user@your-server
+
+# Keep terminal open, then visit:
+# http://localhost:3100
+```
+
+This creates a secure tunnel to the remote dashboard.
 
 ### SSL with Let's Encrypt
 

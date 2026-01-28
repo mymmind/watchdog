@@ -27,6 +27,28 @@ TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
 TELEGRAM_CHAT_ID=123456789
 ```
 
+**Telegram Bot Commands:**
+
+Once configured, your bot supports the following interactive commands:
+
+- `/status` - Get current status of all monitored services
+  - Shows healthy/unhealthy service counts
+  - Lists active alerts with downtime
+  - Groups services by type
+
+- `/restart <service>` - Restart a service remotely
+  - Examples: `/restart docker:postgres`, `/restart pm2:api-server`
+
+- `/help` - Show available commands
+
+The bot will also send automatic notifications for:
+- Service failures
+- Service recoveries
+- Performance anomalies
+- SSL certificate expirations
+- Resource threshold breaches
+- Flapping detection
+
 ### Dashboard (Optional)
 
 ```env
@@ -35,7 +57,21 @@ DASHBOARD_ENABLED=true
 
 # Port for dashboard HTTP server
 DASHBOARD_PORT=3100
+
+# HTTP Basic Authentication (leave empty to disable)
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=your-secure-password-here
+
+# API Key for restart functionality (leave empty to disable)
+# Generate a secure key: openssl rand -hex 32
+RESTART_API_KEY=your-secure-api-key-here
 ```
+
+**Security Notes:**
+- `DASHBOARD_USERNAME` and `DASHBOARD_PASSWORD` enable HTTP Basic Auth for all dashboard endpoints
+- `RESTART_API_KEY` adds additional authentication for the restart API endpoint
+- If not set, dashboard will be accessible without authentication (not recommended for production)
+- Restart functionality can also be used via Telegram bot commands
 
 ### Check Intervals (Optional)
 
