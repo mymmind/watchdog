@@ -176,9 +176,9 @@ Look for issues labeled `good first issue` - these are great for new contributor
 
 ## Community
 
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/watchdog/discussions)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/watchdog/issues)
-- **Pull Requests**: [GitHub PRs](https://github.com/yourusername/watchdog/pulls)
+- **Discussions**: [GitHub Discussions](https://github.com/mymmind/watchdog/discussions)
+- **Issues**: [GitHub Issues](https://github.com/mymmind/watchdog/issues)
+- **Pull Requests**: [GitHub PRs](https://github.com/mymmind/watchdog/pulls)
 
 ## Recognition
 
@@ -195,7 +195,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## Questions?
 
 - Read [DEVELOPMENT.md](DEVELOPMENT.md) for technical details
-- Ask in [Discussions](https://github.com/yourusername/watchdog/discussions)
+- Ask in [Discussions](https://github.com/mymmind/watchdog/discussions)
 - Open an issue with the "Question" template
 
 ---

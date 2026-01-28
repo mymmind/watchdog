@@ -787,8 +787,8 @@ npm install
 
 ## Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/watchdog/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/watchdog/discussions)
+- **Issues**: [GitHub Issues](https://github.com/mymmind/watchdog/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mymmind/watchdog/discussions)
 - **Code of Conduct**: Be respectful and constructive
 - **Security**: Report vulnerabilities privately to maintainers
 

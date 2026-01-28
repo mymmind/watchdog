@@ -56,7 +56,7 @@ Watchdog automatically detects and monitors Docker containers, PM2 processes, sy
 ### 1. Install Dependencies
 
 ```bash
-git clone https://github.com/yourusername/watchdog.git
+git clone https://github.com/mymmind/watchdog.git
 cd watchdog
 npm install
 ```
@@ -300,9 +300,9 @@ Built with:
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/watchdog/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/watchdog/discussions)
-- **Documentation**: [Wiki](https://github.com/yourusername/watchdog/wiki)
+- **Issues**: [GitHub Issues](https://github.com/mymmind/watchdog/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mymmind/watchdog/discussions)
+- **Documentation**: [Wiki](https://github.com/mymmind/watchdog/wiki)
 
 ## 🗺️ Roadmap
 

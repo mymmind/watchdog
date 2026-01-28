@@ -15,7 +15,13 @@
     "test:coverage": "node --test --experimental-test-coverage tests/**/*.test.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop watchdog",
+    "pm2:restart": "pm2 restart watchdog",
+    "pm2:delete": "pm2 delete watchdog",
+    "pm2:logs": "pm2 logs watchdog",
+    "pm2:status": "pm2 status"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.66.0",
@@ -45,10 +51,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/watchdog.git"
+    "url": "https://github.com/mymmind/watchdog.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/watchdog/issues"
+    "url": "https://github.com/mymmind/watchdog/issues"
   },
-  "homepage": "https://github.com/yourusername/watchdog#readme"
+  "homepage": "https://github.com/mymmind/watchdog#readme"
 }
