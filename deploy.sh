@@ -4,9 +4,9 @@
 set -e  # Exit on error
 
 # Configuration
-SERVER_USER="mmmadmin"
-SERVER_HOST="46.224.21.200"
-DEPLOY_PATH="/home/mmmadmin/watchdog"
+SERVER_USER="your-server-user"
+SERVER_HOST="your-server-ip-or-domain"
+DEPLOY_PATH="/home/your-server-user/watchdog"
 
 echo "🐕 Watchdog Deployment Script"
 echo "================================"
