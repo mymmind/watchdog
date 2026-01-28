@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log
+package-lock.json
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# State and logs
+state.json
+discovered-services.yml
+logs/
+*.log
+
+# Tests
+tests/
+coverage/
+.nyc_output/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+.claude/
+
+# CI/CD
+.github/
+.husky/
+
+# Config
+ecosystem.config.js
+watchdog.config.yml
+!watchdog.config.example.yml
+
+# Temporary
+tmp/
+temp/
+*.tmp

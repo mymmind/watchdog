@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  watchdog:
+    build: .
+    container_name: watchdog
+    restart: unless-stopped
+
+    # Environment variables
+    env_file:
+      - .env
+
+    # Mount Docker socket to monitor containers
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./state.json:/app/state.json
+      - ./logs:/app/logs
+      - ./discovered-services.yml:/app/discovered-services.yml
+
+    # Network mode host to access systemd and PM2 on host
+    # network_mode: host  # Uncomment if you need to monitor host services
+
+    # Or use bridge network and expose ports
+    ports:
+      - "3100:3100"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Read-only root filesystem (except for writable paths)
+    # read_only: true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M

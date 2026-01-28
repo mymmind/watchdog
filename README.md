@@ -53,7 +53,29 @@ Watchdog automatically detects and monitors Docker containers, PM2 processes, sy
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
+### Option 1: Docker (Recommended) 🐳
+
+```bash
+# Clone repo
+git clone https://github.com/mymmind/watchdog.git
+cd watchdog
+
+# Configure
+cp .env.example .env
+nano .env  # Add your Telegram credentials
+
+# Start with Docker Compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f watchdog
+```
+
+See [DOCKER.md](DOCKER.md) for complete Docker documentation.
+
+### Option 2: Native Installation
+
+#### 1. Install Dependencies
 
 ```bash
 git clone https://github.com/mymmind/watchdog.git
@@ -61,7 +83,7 @@ cd watchdog
 npm install
 ```
 
-### 2. Create Telegram Bot
+#### 2. Create Telegram Bot
 
 1. Message [@BotFather](https://t.me/botfather) on Telegram
 2. Create new bot with `/newbot` command
@@ -69,7 +91,7 @@ npm install
 4. Start a chat with your bot
 5. Get your chat ID: message [@userinfobot](https://t.me/userinfobot)
 
-### 3. Configure Environment
+#### 3. Configure Environment
 
 Create `.env` file:
 
@@ -89,7 +111,7 @@ CHECK_INTERVAL_RESOURCES=300000    # Disk/RAM/CPU (5 minutes)
 CHECK_INTERVAL_SSL=86400000        # SSL certificates (24 hours)
 ```
 
-### 4. Start Watchdog
+#### 4. Start Watchdog
 
 ```bash
 # Development
@@ -102,7 +124,7 @@ npm run pm2:start
 npm run pm2:logs
 ```
 
-### 5. Access Dashboard
+#### 5. Access Dashboard
 
 Open [http://localhost:3100](http://localhost:3100) in your browser.
 
