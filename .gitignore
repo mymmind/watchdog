@@ -1,5 +1,6 @@
 # Environment
 .env
+deploy.sh
 node_modules/
 
 # State files
