@@ -1,0 +1,54 @@
+{
+  "name": "watchdog",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Auto-discovering server monitoring tool with Telegram alerts",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test tests/**/*.test.js",
+    "test:watch": "node --test --watch tests/**/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage tests/**/*.test.js",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.4.5",
+    "yaml": "^2.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.0.0"
+  },
+  "keywords": [
+    "monitoring",
+    "devops",
+    "alerts",
+    "telegram",
+    "docker",
+    "pm2",
+    "systemd",
+    "health-check",
+    "server-monitoring",
+    "infrastructure"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/watchdog.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/watchdog/issues"
+  },
+  "homepage": "https://github.com/yourusername/watchdog#readme"
+}

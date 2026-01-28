@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watchdog Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-badge.healthy {
+            background: #065f4620;
+            color: #34d399;
+        }
+
+        .status-badge.unhealthy {
+            background: #7f1d1d20;
+            color: #f87171;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #f1f5f9;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .service-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid;
+            transition: transform 0.2s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .service-card.healthy {
+            border-color: #10b981;
+        }
+
+        .service-card.unhealthy {
+            border-color: #ef4444;
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .service-name {
+            font-weight: 600;
+            font-size: 16px;
+            word-break: break-all;
+        }
+
+        .service-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .service-status.healthy {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b98180;
+        }
+
+        .service-status.unhealthy {
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef444480;
+        }
+
+        .service-type {
+            display: inline-block;
+            background: #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .service-info {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .service-error {
+            margin-top: 8px;
+            padding: 8px;
+            background: #7f1d1d20;
+            border-left: 3px solid #ef4444;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #fca5a5;
+        }
+
+        .alerts-list {
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .alert-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-service {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-error {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .alert-time {
+            font-size: 12px;
+            color: #64748b;
+            text-align: right;
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .resource-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .resource-name {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-usage {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.healthy {
+            background: #10b981;
+        }
+
+        .progress-fill.warning {
+            background: #f59e0b;
+        }
+
+        .progress-fill.critical {
+            background: #ef4444;
+        }
+
+        .ssl-table {
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .ssl-row {
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .ssl-row:last-child {
+            border-bottom: none;
+        }
+
+        .ssl-url {
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .ssl-days {
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .ssl-days.healthy {
+            background: #065f4620;
+            color: #34d399;
+        }
+
+        .ssl-days.warning {
+            background: #78350f20;
+            color: #fbbf24;
+        }
+
+        .ssl-days.critical {
+            background: #7f1d1d20;
+            color: #f87171;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 30px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ssl-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐕 Watchdog Dashboard</h1>
+            <div id="overall-status" class="status-badge">Loading...</div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Services</div>
+                <div class="stat-value" id="total-services">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Healthy</div>
+                <div class="stat-value" style="color: #34d399;" id="healthy-services">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unhealthy</div>
+                <div class="stat-value" style="color: #f87171;" id="unhealthy-services">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Alerts</div>
+                <div class="stat-value" style="color: #fbbf24;" id="active-alerts">-</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Services</h2>
+            <div id="services-grid" class="services-grid"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">System Resources</h2>
+            <div id="resources-grid" class="resources-grid"></div>
+        </div>
+
+        <div class="section" id="alerts-section" style="display: none;">
+            <h2 class="section-title">Active Alerts</h2>
+            <div id="alerts-list" class="alerts-list"></div>
+        </div>
+
+        <div class="section" id="ssl-section" style="display: none;">
+            <h2 class="section-title">SSL Certificates</h2>
+            <div id="ssl-table" class="ssl-table"></div>
+        </div>
+
+        <div class="last-updated" id="last-updated">Last updated: Never</div>
+    </div>
+
+    <script>
+        let refreshInterval;
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                updateDashboard(data);
+                document.getElementById('last-updated').textContent =
+                    `Last updated: ${new Date(data.timestamp).toLocaleString()}`;
+            } catch (error) {
+                console.error('Failed to fetch status:', error);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update overall status
+            const overallStatus = document.getElementById('overall-status');
+            if (data.stats.unhealthy === 0) {
+                overallStatus.textContent = 'All Systems Operational';
+                overallStatus.className = 'status-badge healthy';
+            } else {
+                overallStatus.textContent = `${data.stats.unhealthy} Issues Detected`;
+                overallStatus.className = 'status-badge unhealthy';
+            }
+
+            // Update stats
+            document.getElementById('total-services').textContent = data.stats.totalServices;
+            document.getElementById('healthy-services').textContent = data.stats.healthy;
+            document.getElementById('unhealthy-services').textContent = data.stats.unhealthy;
+            document.getElementById('active-alerts').textContent = data.stats.activeAlerts;
+
+            // Update services
+            updateServices(data.services);
+
+            // Update resources
+            updateResources(data.resources);
+
+            // Update alerts
+            updateAlerts(data.alerts);
+
+            // Update SSL
+            updateSSL(data.ssl);
+        }
+
+        function updateServices(services) {
+            const grid = document.getElementById('services-grid');
+
+            if (services.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No services found</div>';
+                return;
+            }
+
+            grid.innerHTML = services.map(service => `
+                <div class="service-card ${service.healthy ? 'healthy' : 'unhealthy'}">
+                    <div class="service-header">
+                        <div>
+                            <div class="service-name">${escapeHtml(service.name)}</div>
+                            <span class="service-type">${service.type}</span>
+                        </div>
+                        <div class="service-status ${service.healthy ? 'healthy' : 'unhealthy'}"></div>
+                    </div>
+                    ${service.responseTime ? `
+                        <div class="service-info">Response: ${service.responseTime}ms</div>
+                    ` : ''}
+                    ${!service.healthy && service.error ? `
+                        <div class="service-error">${escapeHtml(service.error)}</div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function updateResources(resources) {
+            const grid = document.getElementById('resources-grid');
+
+            if (!resources || Object.keys(resources).length === 0) {
+                grid.innerHTML = '<div class="empty-state">No resource data available</div>';
+                return;
+            }
+
+            grid.innerHTML = Object.entries(resources).map(([name, data]) => {
+                const level = data.usage >= data.threshold ? 'critical' :
+                             data.usage >= data.threshold - 10 ? 'warning' : 'healthy';
+
+                return `
+                    <div class="resource-card">
+                        <div class="resource-name">
+                            <span>${name.toUpperCase()}</span>
+                            <span class="resource-usage">${data.usage}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${level}" style="width: ${data.usage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAlerts(alerts) {
+            const section = document.getElementById('alerts-section');
+            const list = document.getElementById('alerts-list');
+
+            if (alerts.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = alerts.map(alert => `
+                <div class="alert-item">
+                    <div>
+                        <div class="alert-service">${escapeHtml(alert.serviceId)}</div>
+                        <div class="alert-error">${escapeHtml(alert.error)}</div>
+                    </div>
+                    <div class="alert-time">
+                        ${formatDuration(alert.duration)} ago<br>
+                        ${alert.consecutiveFailures} failures
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateSSL(ssl) {
+            const section = document.getElementById('ssl-section');
+            const table = document.getElementById('ssl-table');
+
+            if (!ssl || ssl.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            table.innerHTML = ssl.map(cert => {
+                const status = cert.daysRemaining === null ? 'unknown' :
+                              cert.daysRemaining < 7 ? 'critical' :
+                              cert.daysRemaining < 14 ? 'warning' : 'healthy';
+
+                return `
+                    <div class="ssl-row">
+                        <div class="ssl-url">${escapeHtml(cert.url)}</div>
+                        <div class="ssl-days ${status}">
+                            ${cert.daysRemaining !== null ?
+                              `${cert.daysRemaining} days` : 'Unknown'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatDuration(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m`;
+            return `${seconds}s`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial fetch
+        fetchStatus();
+
+        // Refresh every 5 seconds
+        refreshInterval = setInterval(fetchStatus, 5000);
+    </script>
+</body>
+</html>

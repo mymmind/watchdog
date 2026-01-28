@@ -1,0 +1,20 @@
+{
+  "env": {
+    "es2024": true,
+    "node": true
+  },
+  "extends": "airbnb-base",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "off",
+    "import/extensions": ["error", "always"],
+    "class-methods-use-this": "off",
+    "no-restricted-syntax": "off",
+    "max-len": ["error", { "code": 100, "ignoreUrls": true, "ignoreStrings": true }],
+    "no-underscore-dangle": "off",
+    "consistent-return": "off"
+  }
+}

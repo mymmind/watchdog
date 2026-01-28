@@ -1,0 +1,88 @@
+# Watchdog User Configuration Example
+# =====================================
+# This file is optional - Watchdog will auto-discover services without it.
+# Use this to:
+#   - Add custom health check URLs for discovered services
+#   - Add external endpoints to monitor (can't be auto-discovered)
+#   - Exclude specific services from monitoring
+#   - Override default thresholds and intervals
+
+# Override settings for auto-discovered services
+# -----------------------------------------------
+overrides:
+  docker:
+    my-app:
+      httpCheck: http://localhost:3000/api/health  # Custom health endpoint
+      expectedStatus: 200
+
+    api-service:
+      httpCheck: http://localhost:8080/health
+      expectedStatus: 200
+
+  pm2:
+    api-server:
+      httpCheck: http://localhost:8000/health
+
+    frontend:
+      httpCheck: http://localhost:3000
+
+  systemd:
+    nginx:
+      enabled: true  # Explicitly enable monitoring
+
+    postgresql@16-main:
+      enabled: true
+
+# Services to ignore (won't be monitored even if discovered)
+# -----------------------------------------------------------
+ignore:
+  - test-container
+  - dev-database
+  - staging-app
+
+# External endpoints to monitor (can't be auto-discovered)
+# ---------------------------------------------------------
+endpoints:
+  # Simple format - just the URL
+  - https://example.com
+  - https://api.example.com
+
+  # Detailed format with options
+  - url: https://mywebsite.com
+    name: My Website
+    checkSSL: true         # Check SSL certificate expiry
+    expectedStatus: 200    # Expected HTTP status code
+
+  - url: https://api.myapp.com/health
+    name: API Health Check
+    checkSSL: true
+    expectedStatus: 200
+
+# Override default alert thresholds
+# ----------------------------------
+thresholds:
+  disk: 85     # Alert when disk usage > 85%
+  ram: 90      # Alert when RAM usage > 90%
+  cpu: 95      # Alert when CPU usage > 95%
+  sslDays: 14  # Alert when SSL cert expires in 14 days
+
+# Override alert behavior
+# -----------------------
+alerts:
+  cooldownMinutes: 30        # Re-alert every 30 minutes for ongoing issues
+  recoveryNotify: true       # Send notification when service recovers
+  flappingThreshold: 3       # Consider service "flapping" after 3 state changes
+  flappingWindowMinutes: 10  # Within this time window
+
+# Override anomaly detection settings
+# ------------------------------------
+anomaly:
+  enabled: true       # Enable response time anomaly detection
+  multiplier: 3.0     # Alert if response time > 3x the median
+  sampleSize: 20      # Track last 20 response time samples
+
+# Override dashboard settings
+# ---------------------------
+dashboard:
+  enabled: true
+  port: 3100
