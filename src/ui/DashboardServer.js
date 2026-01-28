@@ -40,6 +40,61 @@ export default class DashboardServer {
   }
 
   /**
+   * Check Basic Auth credentials
+   * @param {Object} req - HTTP request
+   * @returns {boolean} - True if authenticated
+   */
+  checkBasicAuth(req) {
+    const username = process.env.DASHBOARD_USERNAME;
+    const password = process.env.DASHBOARD_PASSWORD;
+
+    // If no auth configured, allow access
+    if (!username || !password) {
+      return true;
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+      return false;
+    }
+
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+    const [user, pass] = credentials.split(':');
+
+    return user === username && pass === password;
+  }
+
+  /**
+   * Check API key for restart endpoint
+   * @param {Object} req - HTTP request
+   * @returns {boolean} - True if authenticated
+   */
+  checkApiKey(req) {
+    const apiKey = process.env.RESTART_API_KEY;
+
+    // If no API key configured, allow access
+    if (!apiKey) {
+      return true;
+    }
+
+    const providedKey = req.headers['x-api-key'];
+    return providedKey === apiKey;
+  }
+
+  /**
+   * Send 401 Unauthorized response
+   * @param {Object} res - HTTP response
+   */
+  sendUnauthorized(res) {
+    res.writeHead(401, {
+      'Content-Type': 'text/plain',
+      'WWW-Authenticate': 'Basic realm="Watchdog Dashboard"',
+    });
+    res.end('Unauthorized');
+  }
+
+  /**
    * Handle incoming HTTP requests
    * @param {Object} req - HTTP request
    * @param {Object} res - HTTP response
@@ -48,14 +103,30 @@ export default class DashboardServer {
     const { url, method } = req;
 
     try {
-      if (url === '/' || url === '/index.html') {
+      // Health check endpoint - no auth required
+      if (url === '/health') {
+        this.serveHealth(res);
+        return;
+      }
+
+      // Check authentication for all other endpoints
+      if (!this.checkBasicAuth(req)) {
+        this.sendUnauthorized(res);
+        return;
+      }
+
+      // Additional API key check for restart endpoint
+      if (url.startsWith('/api/restart/') && method === 'POST') {
+        if (!this.checkApiKey(req)) {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, message: 'Invalid or missing API key' }));
+          return;
+        }
+        this.handleRestart(res, url);
+      } else if (url === '/' || url === '/index.html') {
         this.serveHTML(res);
       } else if (url === '/api/status') {
         this.serveStatus(res);
-      } else if (url === '/health') {
-        this.serveHealth(res);
-      } else if (url.startsWith('/api/restart/') && method === 'POST') {
-        this.handleRestart(res, url);
       } else {
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');

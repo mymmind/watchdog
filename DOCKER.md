@@ -31,9 +31,23 @@ docker-compose up -d
 docker-compose logs -f watchdog
 ```
 
-### 4. Access Dashboard
+### 4. Configure Authentication (Recommended)
 
-Open http://localhost:3100
+Generate a secure API key:
+```bash
+openssl rand -hex 32
+```
+
+Add to .env:
+```env
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=your-secure-password
+RESTART_API_KEY=your-generated-api-key
+```
+
+### 5. Access Dashboard
+
+Open http://localhost:3100 (you'll be prompted for username/password)
 
 ## Manual Docker Run
 
@@ -164,8 +178,8 @@ Expected response:
 
 ```yaml
 volumes:
-  # Docker socket (read-only) - Monitor Docker containers
-  - /var/run/docker.sock:/var/run/docker.sock:ro
+  # Docker socket (write access) - Monitor and control containers
+  - /var/run/docker.sock:/var/run/docker.sock
 
   # State persistence - Survives container restarts
   - ./state.json:/app/state.json
@@ -179,24 +193,52 @@ volumes:
 
 ## Security Considerations
 
+### Authentication (Recommended)
+
+Watchdog supports two-layer authentication:
+
+1. **Dashboard Access** - HTTP Basic Auth
+   ```env
+   DASHBOARD_USERNAME=admin
+   DASHBOARD_PASSWORD=your-secure-password
+   ```
+
+2. **Restart Functionality** - API Key
+   ```env
+   RESTART_API_KEY=your-secure-api-key  # Generate with: openssl rand -hex 32
+   ```
+
+**Important:**
+- Leave these variables empty to disable authentication (not recommended if exposed publicly)
+- Use strong passwords and random API keys
+- API key is requested once in browser and stored in localStorage
+- Clear browser data to reset stored API key
+
 ### Docker Socket Access
 
-Mounting the Docker socket gives Watchdog **read access** to Docker:
+Mounting the Docker socket gives Watchdog **write access** to control containers:
 
 ```yaml
 volumes:
-  - /var/run/docker.sock:/var/run/docker.sock:ro  # Read-only
+  - /var/run/docker.sock:/var/run/docker.sock  # Write access for restart functionality
 ```
 
 **What Watchdog can do:**
 - ✅ List containers
 - ✅ Inspect container status
 - ✅ Read container health checks
+- ✅ Restart containers (requires authentication)
 
 **What Watchdog cannot do:**
-- ❌ Start/stop containers
 - ❌ Create/delete containers
-- ❌ Modify containers
+- ❌ Modify container configuration
+- ❌ Access host filesystem (beyond mounted volumes)
+
+**Security Notes:**
+- Write access to Docker socket is powerful - use authentication
+- Container runs as non-root user (`node:988`)
+- Command execution is whitelisted and sanitized
+- All restart actions are logged
 
 ### Non-root User
 

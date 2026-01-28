@@ -607,12 +607,44 @@
             button.disabled = true;
             button.textContent = 'Restarting...';
 
+            // Get API key from localStorage or prompt
+            let apiKey = localStorage.getItem('watchdog_api_key');
+            if (!apiKey || apiKey === 'null') {
+                apiKey = prompt('Enter API key for restart functionality (leave empty if not configured):');
+                if (apiKey) {
+                    localStorage.setItem('watchdog_api_key', apiKey);
+                }
+            }
+
             try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (apiKey) {
+                    headers['X-API-Key'] = apiKey;
+                }
+
                 const response = await fetch(`/api/restart/${type}/${encodeURIComponent(name)}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: headers
                 });
 
                 const result = await response.json();
+
+                // Handle 403 Forbidden - wrong API key
+                if (response.status === 403) {
+                    button.textContent = 'Failed';
+                    button.style.background = '#ef4444';
+                    localStorage.removeItem('watchdog_api_key'); // Clear invalid key
+                    alert('Invalid API key. Please try again.');
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = 'Restart';
+                        button.style.background = '';
+                    }, 2000);
+                    return;
+                }
 
                 if (result.success) {
                     button.textContent = 'Restarted!';

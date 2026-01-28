@@ -9,9 +9,10 @@ services:
     env_file:
       - .env
 
-    # Mount Docker socket to monitor containers
+    # Mount Docker socket to monitor and control containers
+    # Note: Removed :ro to allow restart functionality
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./state.json:/app/state.json
       - ./logs:/app/logs
       - ./discovered-services.yml:/app/discovered-services.yml
