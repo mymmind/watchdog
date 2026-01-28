@@ -3,6 +3,7 @@ services:
     build: .
     container_name: watchdog
     restart: unless-stopped
+    user: "node:988"  # Run as node user with docker group access
 
     # Environment variables
     env_file:
